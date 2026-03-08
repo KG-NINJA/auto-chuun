@@ -32,3 +32,9 @@ body {
     font-size: 1.5em;
     margin: 10px 0;
 }
+
+.input-info {
+    font-size: 0.9em;
+    color: #aaa;
+    margin: 10px 0;
+}

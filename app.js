@@ -13,6 +13,25 @@ const retuneSpeedInput = document.getElementById('retuneSpeed');
 
 const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
+let midiTargetNote = null;
+let keyboardTargetNote = null;
+
+const KEY_TO_NOTE = {
+    'a': 60, // C4
+    'w': 61, // C#4
+    's': 62, // D4
+    'e': 63, // D#4
+    'd': 64, // E4
+    'f': 65, // F4
+    't': 66, // F#4
+    'g': 67, // G4
+    'y': 68, // G#4
+    'h': 69, // A4
+    'u': 70, // A#4
+    'j': 71, // B4
+    'k': 72  // C5
+};
+
 function getNote(frequency) {
     const noteNum = 12 * (Math.log(frequency / 440) / Math.log(2));
     return Math.round(noteNum) + 69;
@@ -54,6 +73,38 @@ function getNearestNoteInScale(frequency, scale) {
     return closestNote;
 }
 
+async function initMIDI() {
+    if (navigator.requestMIDIAccess) {
+        try {
+            const access = await navigator.requestMIDIAccess();
+            for (let input of access.inputs.values()) {
+                input.onmidimessage = (message) => {
+                    const [status, note, velocity] = message.data;
+                    const type = status & 0xf0;
+                    if (type === 0x90 && velocity > 0) { // Note On
+                        midiTargetNote = note;
+                    } else if (type === 0x80 || (type === 0x90 && velocity === 0)) { // Note Off
+                        if (midiTargetNote === note) midiTargetNote = null;
+                    }
+                };
+            }
+        } catch (err) {
+            console.error("MIDI access denied:", err);
+        }
+    }
+}
+
+function initKeyboard() {
+    window.onkeydown = (e) => {
+        const note = KEY_TO_NOTE[e.key.toLowerCase()];
+        if (note) keyboardTargetNote = note;
+    };
+    window.onkeyup = (e) => {
+        const note = KEY_TO_NOTE[e.key.toLowerCase()];
+        if (note && keyboardTargetNote === note) keyboardTargetNote = null;
+    };
+}
+
 async function start() {
     if (audioContext && audioContext.state === 'suspended') {
         await audioContext.resume();
@@ -61,6 +112,8 @@ async function start() {
     }
 
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    initMIDI();
+    initKeyboard();
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: {
@@ -114,10 +167,17 @@ function update() {
     const freq = detectPitchAMDF(buffer, audioContext.sampleRate);
 
     if (freq !== -1 && freq > 50 && freq < 2000) {
-        const targetScale = scaleSelect.value;
-        const nearestNote = getNearestNoteInScale(freq, targetScale);
-        const targetFreq = getFrequency(nearestNote);
+        let nearestNote;
+        const manualNote = midiTargetNote || keyboardTargetNote;
 
+        if (manualNote) {
+            nearestNote = manualNote;
+        } else {
+            const targetScale = scaleSelect.value;
+            nearestNote = getNearestNoteInScale(freq, targetScale);
+        }
+
+        const targetFreq = getFrequency(nearestNote);
         const targetRatio = targetFreq / freq;
 
         // Apply smoothing to avoid artifacts
