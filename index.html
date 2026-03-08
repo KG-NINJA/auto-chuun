@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Tune on Web</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Auto-Tune Web</h1>
+        <div class="controls">
+            <button id="startButton">開始</button>
+            <button id="stopButton" disabled>停止</button>
+        </div>
+        <div class="settings">
+            <label for="scale">音階:</label>
+            <select id="scale">
+                <option value="chromatic">クロマチック (12音)</option>
+                <option value="Cmaj">C Major</option>
+                <option value="Amin">A Minor</option>
+                <option value="Dmaj">D Major</option>
+                <option value="Gmaj">G Major</option>
+            </select>
+        </div>
+        <div class="score-settings">
+            <label for="retuneSpeed">補正速度 (Retune Speed):</label>
+            <input type="range" id="retuneSpeed" min="0" max="100" value="50">
+        </div>
+        <div class="visualizer">
+            <div id="currentPitch">--- Hz</div>
+            <div id="targetNote">---</div>
+        </div>
+    </div>
+    <script src="pitch-detection.js"></script>
+    <script src="pitch-shifter.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

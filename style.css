@@ -1,0 +1,34 @@
+body {
+    font-family: sans-serif;
+    background-color: #222;
+    color: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    padding: 20px;
+    background-color: #333;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.controls button {
+    padding: 10px 20px;
+    font-size: 1.2em;
+    margin: 10px;
+    cursor: pointer;
+}
+
+.visualizer {
+    margin-top: 20px;
+}
+
+#currentPitch, #targetNote {
+    font-size: 1.5em;
+    margin: 10px 0;
+}
